@@ -56,7 +56,7 @@ function get_title(links_arr)
 {
 
     let length = links_arr.length;
-    let titles_arr = [];
+    let titles_arr = {};
     
     return new Promise(function(resolve, reject) {
         
@@ -67,11 +67,10 @@ function get_title(links_arr)
                     var $ = cheerio.load(body);
                     
                     let title = $("head > title").text().trim();
-                    console.log('fetching_title',title);
-                    titles_arr.push(title);
-                    if(titles_arr.length == length)
+                    titles_arr[url] = title;
+                    let size = Object.keys(titles_arr).length;
+                    if(size == length)
                         resolve(titles_arr);
-
                     
                 }
                 else 
@@ -84,28 +83,22 @@ function get_title(links_arr)
 
 }
 
-function send_response(arr,links_arr)
+function send_response(arr)
 {
     return new Promise(function(resolve, reject) {
 
-        console.log('details');
-        console.log('titles',arr);
-        console.log('links_arr',links_arr);
-        if(Array.isArray(arr))
+                    
+        let size = Object.keys(arr).length;
+        if(size>=1)
         {
+              
             let final_res ='<h1> Following are the titles of given websites: </h1> <br>';
             final_res += '<ul>';
-            if(arr.length==1){
-                final_res += '<li> <b>'+ links_arr[0] +' -- '+arr[0]+'</b> </li>';
-            }
-            else
-            {
-                arr.forEach(function(value,index) {  
-                    final_res += '<li> <b>' + links_arr[index] +' -- ' + value +'</b> </li>';
-                    
-                }); 
-                
-            }
+            for (var key in arr) {
+                    if (arr.hasOwnProperty(key)) {
+                        final_res += '<li> <b>' + key +' -- ' + arr[key] +'</b> </li>';
+                    }
+                }
             final_res +='</ul>';
             resolve(final_res);
         }
@@ -127,7 +120,7 @@ app.get('/I/want/title/', function(req, res){
     {
         let getTitle = get_title(result).then(function (data)
         {
-            let sendResponse = send_response(data,result).then(function (result)
+            let sendResponse = send_response(data).then(function (result)
             {
                 return res.send(result);
                
