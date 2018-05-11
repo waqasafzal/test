@@ -68,13 +68,15 @@ function get_title(links_arr)
                     
                     let title = $("head > title").text().trim();
                     titles_arr[url] = title;
-                    let size = Object.keys(titles_arr).length;
-                    if(size == length)
-                        resolve(titles_arr);
+                    
                     
                 }
-                else 
-                    console.log(`Error = ${error}, code = ${response.statusCode}`);
+                else
+                    titles_arr[url] = "not Found";
+                
+                let size = Object.keys(titles_arr).length;
+                if(size == length)
+                    resolve(titles_arr);
                 
             });
 
@@ -116,26 +118,33 @@ app.get('/', function (req, res) {
 app.get('/I/want/title/', function(req, res){
 
     let query = req.query.name;
-    let get_query_details = getData(query).then(function(result) 
+    if(query!=undefined)
     {
-        let getTitle = get_title(result).then(function (data)
+        let get_query_details = getData(query).then(function(result) 
         {
-            let sendResponse = send_response(data).then(function (result)
+            let getTitle = get_title(result).then(function (data)
             {
-                return res.send(result);
+                let sendResponse = send_response(data).then(function (result)
+                {
+                    return res.send(result);
+                   
+                }, function(err) {
+                    return res.send(err);
+                });
+
                
             }, function(err) {
                 return res.send(err);
             });
-
-           
+                
         }, function(err) {
             return res.send(err);
         });
-            
-    }, function(err) {
-        return res.send(err);
-    });
+        
+    }
+    else
+        return res.send("You didn't enter any link.");
+
 
 });
 
